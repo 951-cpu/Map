@@ -8,7 +8,7 @@
     html, body { margin: 0; height: 100%; font-family: sans-serif; }
     #map { width: 100%; height: 100%; }
 
-    /* 왼쪽 위 패널 */
+
     #panel {
       position: absolute; top: 12px; left: 12px; z-index: 100;
       width: 340px; max-width: calc(100% - 24px); box-sizing: border-box;
@@ -57,9 +57,6 @@
   </div>
 
   <script>
-    // ===== 1. 카테고리 설정 =====
-    // 큰 카테고리 → 중간 카테고리 → 세부 카테고리
-    // 세부가 없으면 [] 로 둡니다. 큰 카테고리는 여기에 추가하면 버튼이 자동으로 생깁니다.
     var CATEGORIES = {
       '무한리필': {
         '해산물': [],
@@ -68,9 +65,6 @@
       // '카페': { '디저트': [], '스터디': [] },
     };
 
-    // ===== 2. 가게 목록 =====
-    // cats: '중간' 또는 '중간/세부'. 여러 개 넣으면 어느 필터에서든 보입니다.
-    // lat, lng 를 직접 넣으면 주소 검색 대신 그 좌표를 씁니다.
     var ADDR_PREFIX = '강원특별자치도 춘천시 ';
     var PLACES = [
       { name: '우리송어양식장횟집',   addr: '우묵길60번길 26',     main: '무한리필', cats: ['해산물'] },
@@ -104,7 +98,7 @@
       { name: '크루아 라다',           addr: '서부대성로44번길 25',  main: '무한리필', cats: ['육류/돼지고기'], note: '무까타' }
     ];
 
-    // ===== 3. 지도 =====
+
     var map = new naver.maps.Map('map', {
       center: new naver.maps.LatLng(37.8866, 127.7385), // 한림대학교
       zoom: 14,
@@ -130,7 +124,6 @@
       infoWindow.open(map, p.marker);
     }
 
-    // 주소 → 좌표
     function geocode(p) {
       return new Promise(function (resolve) {
         if (p.lat && p.lng) return resolve();
@@ -144,7 +137,6 @@
       });
     }
 
-    // ===== 4. 필터 + 검색 =====
     var sel = ['전체', '전체', '전체']; // [큰, 중간, 세부]
     var query = '';
 
@@ -182,14 +174,13 @@
     }
 
     function render() {
-      // 버튼 줄
+    
       buttonRow('row0', 0, Object.keys(CATEGORIES));
       var mids = sel[0] !== '전체' ? CATEGORIES[sel[0]] : null;
       buttonRow('row1', 1, mids ? Object.keys(mids) : null);
       var subs = mids && sel[1] !== '전체' ? mids[sel[1]] : null;
       buttonRow('row2', 2, subs && subs.length ? subs : null);
 
-      // 마커 + 목록
       infoWindow.close();
       var list = document.getElementById('list');
       list.innerHTML = '';
@@ -201,7 +192,6 @@
         if (ok) shown.push(p);
       });
 
-      // 검색어가 있을 때만 목록 표시
       if (query) {
         shown.forEach(function (p) {
           var li = document.createElement('li');
@@ -218,8 +208,8 @@
         });
       }
 
-      var msg = shown.length + '곳 표시 중';
-      if (query && shown.length === 0) msg = '검색 결과가 없어요';
+      var msg = shown.length + '표시 중';
+      if (query && shown.length === 0) msg = '검색 결과가 없습니다';
       document.getElementById('count').textContent = msg + failedMsg;
     }
 
@@ -229,7 +219,6 @@
       render();
     });
 
-    // ===== 5. 시작 =====
     Promise.all(PLACES.map(geocode)).then(function () {
       var failed = [];
       PLACES.forEach(function (p) {
@@ -242,8 +231,8 @@
         naver.maps.Event.addListener(p.marker, 'click', function () { openInfo(p); });
       });
       if (failed.length) {
-        failedMsg = ' · 위치 못 찾음 ' + failed.length + '곳';
-        console.warn('주소로 위치를 못 찾은 가게:', failed);
+        failedMsg = ' · 위치를 찾을 수 없습니다 ' + failed.length + '곳';
+        console.warn('잘못된 위치입니다:', failed);
       }
       render();
     });
