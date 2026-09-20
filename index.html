@@ -8,7 +8,6 @@
     html, body { margin: 0; height: 100%; font-family: sans-serif; }
     #map { width: 100%; height: 100%; }
 
-
     #panel {
       position: absolute; top: 12px; left: 12px; z-index: 100;
       width: 340px; max-width: calc(100% - 24px); box-sizing: border-box;
@@ -31,7 +30,10 @@
     .btn.l1.active { background: #333;    border-color: #333;    color: #fff; }
     .btn.l2.active { background: #777;    border-color: #777;    color: #fff; }
 
-    #count { margin-top: 8px; font-size: 12px; color: #666; }
+    #countBar { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+    #count { font-size: 12px; color: #666; }
+    #toggle { border: none; background: none; color: #03c75a; font-size: 12px; cursor: pointer; padding: 0; }
+    #panel.collapsed #list { display: none; }
 
     #list { list-style: none; margin: 8px 0 0; padding: 0; max-height: 40vh; overflow-y: auto; }
     #list:empty { display: none; }
@@ -52,7 +54,10 @@
     <div class="row" id="row0"></div>
     <div class="row" id="row1"></div>
     <div class="row" id="row2"></div>
-    <div id="count">위치 불러오는 중…</div>
+    <div id="countBar">
+      <span id="count">위치 불러오는 중…</span>
+      <button id="toggle">목록 접기 ▲</button>
+    </div>
     <ul id="list"></ul>
   </div>
 
@@ -97,7 +102,6 @@
 
       { name: '크루아 라다',           addr: '서부대성로44번길 25',  main: '무한리필', cats: ['육류/돼지고기'], note: '무까타' }
     ];
-
 
     var map = new naver.maps.Map('map', {
       center: new naver.maps.LatLng(37.8866, 127.7385), // 한림대학교
@@ -174,7 +178,6 @@
     }
 
     function render() {
-    
       buttonRow('row0', 0, Object.keys(CATEGORIES));
       var mids = sel[0] !== '전체' ? CATEGORIES[sel[0]] : null;
       buttonRow('row1', 1, mids ? Object.keys(mids) : null);
@@ -192,7 +195,7 @@
         if (ok) shown.push(p);
       });
 
-      if (query) {
+      {
         shown.forEach(function (p) {
           var li = document.createElement('li');
           li.innerHTML = '<div class="name">' + p.name + '</div>' +
@@ -203,6 +206,10 @@
             map.setZoom(17);
             map.panTo(p.marker.getPosition());
             openInfo(p);
+            if (window.innerWidth < 600) {
+              document.getElementById('panel').classList.add('collapsed');
+              document.getElementById('toggle').textContent = '목록 펼치기 ▼';
+            }
           };
           list.appendChild(li);
         });
@@ -214,6 +221,12 @@
     }
 
     var failedMsg = '';
+
+    document.getElementById('toggle').addEventListener('click', function () {
+      var panel = document.getElementById('panel');
+      panel.classList.toggle('collapsed');
+      this.textContent = panel.classList.contains('collapsed') ? '목록 펼치기 ▼' : '목록 접기 ▲';
+    });
     document.getElementById('search').addEventListener('input', function (e) {
       query = e.target.value.trim().toLowerCase();
       render();
@@ -231,8 +244,8 @@
         naver.maps.Event.addListener(p.marker, 'click', function () { openInfo(p); });
       });
       if (failed.length) {
-        failedMsg = ' · 위치를 찾을 수 없습니다 ' + failed.length + '곳';
-        console.warn('잘못된 위치입니다:', failed);
+        failedMsg = ' · 위치 못 찾음 ' + failed.length + '곳';
+        console.warn('위치를 찾을 수 없습니다:', failed);
       }
       render();
     });
