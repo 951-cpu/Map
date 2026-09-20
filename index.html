@@ -8,7 +8,6 @@
     html, body { margin: 0; height: 100%; font-family: sans-serif; }
     #map { width: 100%; height: 100%; }
 
-    /* 왼쪽 위 패널 */
     #panel {
       position: absolute; top: 12px; left: 12px; z-index: 100;
       width: 340px; max-width: calc(100% - 24px); box-sizing: border-box;
@@ -63,9 +62,6 @@
   </div>
 
   <script>
-    // ===== 1. 카테고리 설정 =====
-    // 큰 카테고리 → 중간 카테고리 → 세부 카테고리
-    // 세부가 없으면 [] 로 둡니다. 큰 카테고리는 여기에 추가하면 버튼이 자동으로 생깁니다.
     var CATEGORIES = {
       '무한리필': {
         '해산물': [],
@@ -75,9 +71,6 @@
       // '카페': { '디저트': [], '스터디': [] },
     };
 
-    // ===== 2. 가게 목록 =====
-    // cats: '중간' 또는 '중간/세부'. 여러 개 넣으면 어느 필터에서든 보입니다.
-    // lat, lng 를 직접 넣으면 주소 검색 대신 그 좌표를 씁니다.
     var ADDR_PREFIX = '강원특별자치도 춘천시 ';
     var PLACES = [
       { name: '우리송어양식장횟집',   addr: '우묵길60번길 26',     main: '무한리필', cats: ['해산물'] },
@@ -120,7 +113,6 @@
       { name: '오믈하우스',           addr: '서부대성로227번길 24', main: '6,000원 이하', cats: [], detail: '2층' }
     ];
 
-    // ===== 3. 지도 =====
     var map = new naver.maps.Map('map', {
       center: new naver.maps.LatLng(37.8866, 127.7385), // 한림대학교
       zoom: 14,
@@ -151,7 +143,6 @@
       infoWindow.open(map, p.marker);
     }
 
-    // 주소 → 좌표
     function geocode(p) {
       return new Promise(function (resolve) {
         if (p.lat && p.lng) return resolve();
@@ -167,7 +158,6 @@
       });
     }
 
-    // ===== 4. 필터 + 검색 =====
     var sel = ['전체', '전체', '전체']; // [큰, 중간, 세부]
     var query = '';
 
@@ -206,14 +196,12 @@
     }
 
     function render() {
-      // 버튼 줄
       buttonRow('row0', 0, Object.keys(CATEGORIES));
       var mids = sel[0] !== '전체' ? CATEGORIES[sel[0]] : null;
       buttonRow('row1', 1, mids && Object.keys(mids).length ? Object.keys(mids) : null);
       var subs = mids && sel[1] !== '전체' ? mids[sel[1]] : null;
       buttonRow('row2', 2, subs && subs.length ? subs : null);
 
-      // 마커 + 목록
       infoWindow.close();
       var list = document.getElementById('list');
       list.innerHTML = '';
@@ -225,7 +213,6 @@
         if (ok) shown.push(p);
       });
 
-      // 현재 필터·검색에 맞는 가게 목록
       {
         shown.forEach(function (p) {
           var li = document.createElement('li');
@@ -237,7 +224,6 @@
             map.setZoom(17);
             map.panTo(p.marker.getPosition());
             openInfo(p);
-            // 휴대폰처럼 화면이 좁으면 지도가 보이도록 목록을 접음
             if (window.innerWidth < 600) {
               document.getElementById('panel').classList.add('collapsed');
               document.getElementById('toggle').textContent = '목록 펼치기 ▼';
@@ -248,13 +234,12 @@
       }
 
       var msg = shown.length + '곳 표시 중';
-      if (query && shown.length === 0) msg = '검색 결과가 없어요';
+      if (query && shown.length === 0) msg = '검색 결과가 없습니다';
       document.getElementById('count').textContent = msg + failedMsg;
     }
 
     var failedMsg = '';
 
-    // 목록 접기/펼치기
     document.getElementById('toggle').addEventListener('click', function () {
       var panel = document.getElementById('panel');
       panel.classList.toggle('collapsed');
@@ -265,13 +250,11 @@
       render();
     });
 
-    // ===== 5. 시작 =====
     Promise.all(PLACES.map(geocode)).then(function () {
       var failed = [];
       var used = {};
       PLACES.forEach(function (p) {
         if (!p.lat) return;
-        // 같은 건물(같은 좌표)에 있는 가게는 마커가 겹치지 않게 살짝 옆으로 옮김
         var key = p.lat.toFixed(6) + ',' + p.lng.toFixed(6);
         var n = used[key] || 0;
         used[key] = n + 1;
@@ -288,7 +271,7 @@
       });
       if (failed.length) {
         failedMsg = failed.length === PLACES.length
-          ? ' · 위치를 하나도 못 찾았어요 (Geocoding 설정 확인)'
+          ? ' · 위치 못 찾음 (Geocoding 설정 확인)'
           : ' · 위치 못 찾음 ' + failed.length + '곳';
         console.warn('주소로 위치를 못 찾은 가게:', failed);
       }
