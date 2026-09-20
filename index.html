@@ -74,11 +74,9 @@
       // '카페': { '디저트': [], '스터디': [] },
     };
 
-    // 처음 화면(전체)에는 숨기고, 검색하거나 해당 버튼을 눌렀을 때만 보여줄 카테고리
     var HIDDEN_MAINS = ['카피바라추천'];
 
     var ADDR_PREFIX = '강원특별자치도 춘천시 ';
-    // off: 휴무일 (목록에서 가게 이름 옆에 빨간 글씨로 표시). 예) off: '매주 월요일 휴무'
     var PLACES = [
       { name: '우리송어양식장횟집',   addr: '우묵길60번길 26',     main: ['무한리필', '카피바라추천'], cats: ['해산물'] },
       { name: '송암골평창송어 춘천점', addr: '공지로 345',           main: '무한리필', cats: ['해산물'], off: '매월 둘째, 넷째 화요일 휴무' },
@@ -118,10 +116,7 @@
       { name: '봉실스넥',             addr: '서부대성로239번길 8',  main: '6,000원 이하', cats: [] },
       { name: '광치해장국',           addr: '소양로 108',           main: '6,000원 이하', cats: [] },
       { name: '오믈하우스',           addr: '서부대성로227번길 24', main: '6,000원 이하', cats: [], detail: '2층', off: '매주 일요일 휴무' },
-
-      // ----- 카피바라추천 (처음 화면에는 숨김) -----
-      // 우리송어양식장횟집은 맨 위에서 main 에 '카피바라추천'을 함께 넣었습니다
-      // rec: 추천 메뉴 (카피바라추천 필터를 켰을 때 목록에 표시)
+      
       { name: '브릭스피자',           addr: '서부대성로 255',       main: '카피바라추천', cats: [], rec: '고구마크림치즈피자' },
       { name: '찹쌀미친꽈배기',        addr: '충열로 32',            main: '카피바라추천', cats: [] },
       { name: '혜정닭갈비',           addr: '금강로62번길 11-1',    main: '카피바라추천', cats: [] },
@@ -129,13 +124,12 @@
     ];
 
     var map = new naver.maps.Map('map', {
-      center: new naver.maps.LatLng(37.8866, 127.7385), // 한림대학교
+      center: new naver.maps.LatLng(37.8866, 127.7385), 
       zoom: 14,
       zoomControl: true
     });
     var infoWindow = new naver.maps.InfoWindow({ content: '' });
 
-    // main 은 '무한리필' 처럼 하나만 써도 되고, ['무한리필', '카피바라추천'] 처럼 여러 개도 됩니다
     function mains(p) {
       return Array.isArray(p.main) ? p.main : [p.main];
     }
@@ -185,7 +179,6 @@
     function matchCategory(p) {
       var m = mains(p);
       if (sel[0] !== '전체' && m.indexOf(sel[0]) === -1) return false;
-      // 숨김 카테고리에만 속한 가게: '전체'에서 검색어가 없으면 안 보임
       if (sel[0] === '전체' && !query &&
           m.every(function (x) { return HIDDEN_MAINS.indexOf(x) !== -1; })) return false;
       if (!p.cats.length) return sel[1] === '전체';
